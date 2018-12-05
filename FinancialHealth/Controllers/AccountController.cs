@@ -17,33 +17,16 @@ namespace BlogPost.Controllers
         {
             _signInManager=signInManager;
         }
-        [HttpGet]
-        public IActionResult Login()
-        {
-            return View();
-        }
-
-        [HttpPost]
-        // [Route("api/Account/Login")]
-        public IActionResult Login1()
-        {
-           return Content("Hi there!");
-        }
+     
+      
 
         [HttpPost]
         public async Task<IActionResult> Login([FromBody] LoginModel.InputModel model)
         {
-            // if(model==null || String.IsNullOrEmpty(model.Password) || String.IsNullOrEmpty(model.Email)){
-            //     return BadRequest();
-            // }
-            if(Request.Method.ToUpper() == "OPTIONS")
-            {
-                return Ok();
-            }
             if(model==null || String.IsNullOrEmpty(model.Password) || String.IsNullOrEmpty(model.Email)){
                 return BadRequest();
             }
-            var identityUser = _signInManager.UserManager.Users.FirstOrDefault(x=>x.Email.ToUpper() == model.Email);
+            var identityUser = await _signInManager.UserManager.FindByNameAsync(model.Email);
             if(identityUser ==null){
                 return Json(new {
                     IsError = true,
@@ -53,12 +36,38 @@ namespace BlogPost.Controllers
             var signInResult = await _signInManager.PasswordSignInAsync(identityUser, model.Password, model.RememberMe, true);
             if(signInResult.Succeeded){
                 return Json(new {
-                    IsError = false
+                    IsError = false,
+                    HashedPassword = StringEncryptor.EncryptString(model.Password, "TOMSK2018")
                 });
             }
            return Json(new {
                     IsError = true,
                     Error = "Введён неверный пароль"
+                });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Register([FromBody] RegisterModel.InputModel model)
+        {
+            if(model==null || String.IsNullOrEmpty(model.Password) || String.IsNullOrEmpty(model.ConfirmPassword) ||String.IsNullOrEmpty(model.Email)){
+                return BadRequest();
+            }
+            if(model.Password!=model.ConfirmPassword){
+                 return Json(new {
+                    IsError = true,
+                    Error = "Введённые пароли не совпадают"
+                });
+            }
+            var identityUser = new IdentityUser { UserName = model.Email };         
+            var identityResults = await _signInManager.UserManager.CreateAsync(identityUser, model.Password);
+            if(!identityResults.Succeeded){
+                return Json(new {
+                    IsError = true,
+                    Error = "При создании нового пользователя произошла ошибка. Убедитесь, что выбранный вами пароль содержит не менее 6 символов"
+                });
+            }
+            return Json(new {
+                    IsError = false
                 });
         }
     }

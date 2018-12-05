@@ -4,14 +4,12 @@ import { loadProgressBar } from 'axios-progress-bar';
 import Paper from 'material-ui/Paper';
 import RaisedButton from 'material-ui/RaisedButton';
 import FlatButton from 'material-ui/FlatButton';
-import Checkbox from 'material-ui/Checkbox';
 import {grey500, white, red900} from 'material-ui/styles/colors';
-import PersonAdd from 'material-ui/svg-icons/social/person-add';
+import CardMembership from 'material-ui/svg-icons/action/card-membership';
 import Help from 'material-ui/svg-icons/action/help';
 import TextField from 'material-ui/TextField';
 import ThemeDefault from '../theme-default';
 import axios from 'axios';
-import cookie from 'react-cookies'
 
 import 'axios-progress-bar/dist/nprogress.css';
 
@@ -22,12 +20,12 @@ class LoginPage extends React.Component {
     this.state = {
       email: '',
       password: '',
-      rememberMe: false
+      confirmPassword: ''
     };
   }
 
-  login(email, password, rememberMe) {
-    if(email=='' || password==''){
+  login(email, password, confirmPassword) {
+    if(email=='' || password=='' || confirmPassword==''){
       this.setState({error: 'Введите вашу электронную почту и пароль'});
       return;
     }
@@ -35,12 +33,16 @@ class LoginPage extends React.Component {
       this.setState({error:'Введите действительный адрес электронной почты'});
       return;
     }
+    if( password!=confirmPassword){
+        this.setState({error: 'Введённые пароли не совпадают'});
+        return;
+      }
     loadProgressBar();
     this.setState({disableLoginButton: true});
-    axios.post('httpS://localhost:5001/Account/Login', {
+    axios.post('httpS://localhost:5001/Account/Register', {
       email: email,
       password: password,
-      rememberMe: rememberMe
+      confirmPassword: confirmPassword
       },{ headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
@@ -52,9 +54,7 @@ class LoginPage extends React.Component {
         }
         else {
           this.setState({disableLoginButton: false});
-          cookie.save('userEmail', email, { path: '/' })
-          cookie.save('userPassword', res.data.hashedPassword, {path:'/'});
-          window.location.href='table';
+          window.location.href='login';
         }
       });
     
@@ -142,26 +142,27 @@ class LoginPage extends React.Component {
                   onChange={(e) => this.setState({email: e.target.value})}
                 />
                 <TextField
-                  hintText="Введите ваш пароль"
+                  hintText="Введите пароль"
                   floatingLabelText="Пароль"
                   fullWidth={true}
                   type="password"
                   onChange={(e) => this.setState({password: e.target.value})}
                 />
+                 <TextField
+                  hintText="Повторите ваш пароль"
+                  floatingLabelText="Повторите пароль"
+                  fullWidth={true}
+                  type="password"
+                  onChange={(e) => this.setState({confirmPassword: e.target.value})}
+                />
   
                 <div>
-                  <Checkbox
-                    label="Запомнить меня"
-                    style={styles.checkRemember.style}
-                    labelStyle={styles.checkRemember.labelStyle}
-                    iconStyle={styles.checkRemember.iconStyle}
-                    onCheck={(e) => this.setState({rememberMe: e.target.checked})}
-                  />
+                 
                   
-                    <RaisedButton label="Вход в систему"
+                    <RaisedButton label="Регистрация"
                                   primary={true}
                                   disabled={this.state.disableLoginButton}
-                                  onClick={() => this.login(this.state.email, this.state.password, this.state.rememberMe)}
+                                  onClick={() => this.login(this.state.email, this.state.password, this.state.confirmPassword)}
                                   style={styles.loginBtn}/>
                 </div>
               </form>
@@ -169,17 +170,17 @@ class LoginPage extends React.Component {
   
             <div style={styles.buttonsDiv}>
               <FlatButton
-                label="Регистрация"
-                href="/register"
+                label="Вход в систему"
+                href="/"
                 style={styles.flatButton}
-                icon={<PersonAdd />}
+                icon={<CardMembership />}
               />
   
               <FlatButton
                 label="Сброс пароля"
                 href="/"
                 onClick={(e)=> {alert('Для данного функционала необходимо подключить smtp сервер');
-                                e.preventDefault()}}
+                                e.preventDefault();}}
                 style={styles.flatButton}
                 icon={<Help />}
               />

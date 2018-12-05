@@ -3,6 +3,7 @@ import { Route, IndexRoute } from 'react-router';
 import App from './containers/App';
 import NotFoundPage from './containers/NotFoundPage.js';
 import LoginPage from './containers/LoginPage';
+import RegisterPage from './containers/RegisterPage';
 import FormPage from './containers/FormPage';
 import TablePage from './containers/TablePage';
 import Dashboard from './containers/DashboardPage';
@@ -14,6 +15,7 @@ export default (
       <Route path="dashboard" component={Dashboard}/>
       <Route path="form" component={FormPage}/>
       <Route path="login" component={LoginPage}/>
+      <Route path="register" component={RegisterPage}/>
       <Route path="table" component={TablePage}/>
       <Route path="*" component={NotFoundPage}/>
     </Route>
